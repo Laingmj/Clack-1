@@ -16,7 +16,7 @@ public class MessageClackData extends ClackData{
         return this.hashCode()==(m.hashCode());
     }
     public String toString(){
-        return this.getUsername() + " " + this.getType() + " " + message;
+        return "Username: " + this.getUsername() + " Data type: " + this.getType() + " Message: " + message;
     }
 
     public int hashCode(){
