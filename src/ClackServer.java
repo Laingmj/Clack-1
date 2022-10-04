@@ -30,7 +30,7 @@ public class ClackServer {
     }
 
     public int hashCode() {
-        return port;
+        return this.dataToReceiveFromClient.hashCode() * this.dataToSendToClient.hashCode() * this.port;
     }
 
     public String toString() {
