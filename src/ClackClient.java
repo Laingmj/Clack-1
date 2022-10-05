@@ -24,8 +24,7 @@ public class ClackClient {
     }
 
     ClackClient(String userName) {
-        this.userName = userName;
-        this.hostName = "localhost";
+        this(userName, "localhost");
     }
 
     ClackClient() {
