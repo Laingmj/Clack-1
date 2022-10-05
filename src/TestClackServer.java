@@ -9,7 +9,7 @@ public class TestClackServer {
 
         //hashCode and equals tests
         main.ClackServer test3 = test1;
-        if (test.equals(test2)) {
+        if (test1.equals(test2)) {
             System.out.println("The two objects are equal" + '\n' +
                     "Hashcode of test1: " + test1.hashCode() + '\n' +
                     "Hashcode of test2: " + test3.hashCode());
