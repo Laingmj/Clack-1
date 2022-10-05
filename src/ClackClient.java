@@ -6,11 +6,11 @@ public class ClackClient {
     String hostName; //String representing name of the computer representing the server
     int port; //integer representing port number on server connected to
     boolean closeConnection; //boolean representing whether connection is closed or not
-    ClackData dataToSendToServer; //ClackData object representing data sent to server
-    ClackData dataToReceiveFromServer; //ClackData object representing data received from the server
+    data.ClackData dataToSendToServer; //ClackData object representing data sent to server
+    data.ClackData dataToReceiveFromServer; //ClackData object representing data received from the server
 
     //constructors
-    ClackClient(String userName, String hostName, int port) {
+    public ClackClient(String userName, String hostName, int port) {
         this.userName = userName;
         this.hostName = hostName;
         this.port = port;
@@ -19,15 +19,15 @@ public class ClackClient {
         dataToReceiveFromServer = null;
     }
 
-    ClackClient(String userName, String hostName) {
+    public ClackClient(String userName, String hostName) {
         this(userName, hostName, 7000);
     }
 
-    ClackClient(String userName) {
+    public ClackClient(String userName) {
         this(userName, "localhost");
     }
 
-    ClackClient() {
+    public ClackClient() {
         this("anonymous");
     }
 
