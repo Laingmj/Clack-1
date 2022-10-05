@@ -55,7 +55,7 @@ public class ClackClient {
     }
 
     public int hashCode() {
-        return this.userName.hashCode() * this.hostName.hashCode() * this.port * this.closeConnection.hashCode() * this.dataToSendToServer.hashCode() * 
+        return this.userName.hashCode() * this.hostName.hashCode() * this.port * this.dataToSendToServer.hashCode() * 
                this.dataToReceiveFromServer.hashCode();
     }
 
