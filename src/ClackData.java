@@ -5,6 +5,7 @@ public abstract class ClackData {
     private int type;
     private Date date;
 
+    //constructors
     public ClackData(String username, int type) {
         this.username = username;
         this.type = type;
@@ -17,7 +18,7 @@ public abstract class ClackData {
     public ClackData(){
         this("Anon", 1);
     }
-
+//getters
     public int getType(){
         return type;
     }
