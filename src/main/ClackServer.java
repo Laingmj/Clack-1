@@ -4,17 +4,17 @@ public class ClackServer {
     //data
     int port;
     boolean closeConnection;
-    ClackData dataToReceiveFromClient;
-    ClackData dataToSendToClient;
+    data.ClackData dataToReceiveFromClient;
+    data.ClackData dataToSendToClient;
 
     //constructors
-    ClackServer (int port) {
+    public ClackServer (int port) {
         this.port = port;
         dataToReceiveFromClient = null;
         dataToSendToClient = null;
     }
 
-    ClackServer() {
+    public ClackServer() {
         this(7000);
     }
 
@@ -30,7 +30,7 @@ public class ClackServer {
     }
 
     public int hashCode() {
-        return port;
+        return this.dataToReceiveFromClient.hashCode() * this.dataToSendToClient.hashCode() * this.port;
     }
 
     public String toString() {
