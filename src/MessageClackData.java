@@ -6,7 +6,7 @@ public class MessageClackData extends ClackData{
         this.message = message;
     }
     public MessageClackData(){
-        this("Anon", "", 1);
+        this("Anon", "", 2);
     }
     public String getData(){
         return message;
