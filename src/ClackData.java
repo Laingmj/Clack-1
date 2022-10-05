@@ -1,6 +1,12 @@
 import java.util.Date;
 
 public abstract class ClackData {
+    
+    public final int CONSTANT_LISTUSERS = 0;
+    public final int CONSTANT_LOGOUT = 1;
+    public final int CONSTANT_SENDMESSAGE = 2;
+    public final int CONSTANT_SENDFILE = 3;
+    
     private String username;
     private int type;
     private Date date;
@@ -16,7 +22,7 @@ public abstract class ClackData {
     }
 
     public ClackData(){
-        this("Anon", 1);
+        this("Anon", 0);
     }
 //getters
     public int getType(){
