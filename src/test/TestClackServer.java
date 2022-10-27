@@ -1,28 +1,43 @@
 package test;
 
+import main.ClackServer;
+
 public class TestClackServer {
     public static void main(String[] args) {
-        //constructor and accessor tests
-        main.ClackServer test1 = new main.ClackServer(100);
-        System.out.println("port is: " + test1.getPort());
+        // All three constructors of ClackServer
+        ClackServer clackServer1 = new ClackServer(12345);
+        ClackServer clackServer2 = new ClackServer(7000);
+        ClackServer clackServer3 = new ClackServer();
+        ClackServer clackServer4 = new ClackServer(-99);
 
-        main.ClackServer test2 = new main.ClackServer();
-        System.out.println(test2);
+        // getPort()
+        System.out.println("clackServer1 getPort(): " + clackServer1.getPort());
+        System.out.println("clackServer2 getPort(): " + clackServer2.getPort());
+        System.out.println("clackServer3 getPort(): " + clackServer3.getPort());
+        System.out.println("clackServer4 getPort(): " + clackServer4.getPort());
+        System.out.println();
 
-        //hashCode and equals tests
-        main.ClackServer test3 = test1;
-        if (test1.equals(test2)) {
-            System.out.println("The two objects are equal" + '\n' +
-                    "Hashcode of test1: " + test1.hashCode() + '\n' +
-                    "Hashcode of test2: " + test3.hashCode());
-        }
-        else {
-            System.out.println("The two objects are not equal" + '\n' +
-                    "Hashcode of test1: " + test1.hashCode() + '\n' +
-                    "Hashcode of test2: " + test3.hashCode());
-        }
+        // hashCode()
+        System.out.println("clackServer1 hashCode(): " + clackServer1.hashCode());
+        System.out.println("clackServer2 hashCode(): " + clackServer2.hashCode());
+        System.out.println("clackServer3 hashCode(): " + clackServer3.hashCode());
+        System.out.println("clackServer4 hashCode(): " + clackServer4.hashCode());
+        System.out.println();
 
-        //toString test
-        System.out.println(test1);
+        // equals()
+        System.out.println("clackServer1 equals null: " + clackServer1.equals(null)); // false
+        System.out.println("clackServer1 equals clackServer1: " + clackServer1.equals(clackServer1)); // true
+        System.out.println("clackServer1 equals clackServer2: " + clackServer1.equals(clackServer2)); // true
+        System.out.println("clackServer2 equals clackServer1: " + clackServer2.equals(clackServer1)); // true
+        System.out.println("clackServer1 equals clackServer3: " + clackServer1.equals(clackServer3)); // false
+        System.out.println("clackServer3 equals clackServer1: " + clackServer3.equals(clackServer1)); // false
+        System.out.println("clackServer1 equals clackServer4: " + clackServer1.equals(clackServer4)); // false
+        System.out.println();
+
+        // toString()
+        System.out.println("clackServer1:\n" + clackServer1);
+        System.out.println("clackServer2:\n" + clackServer2);
+        System.out.println("clackServer3:\n" + clackServer3);
+        System.out.println("clackServer4:\n" + clackServer4);
     }
 }
