@@ -24,6 +24,18 @@ public class MessageClackData extends ClackData {
     }
 
     /**
+     * constructor for an encrypted message
+     * @param userName
+     * @param message
+     * @param key
+     * @param type
+     */
+    public MessageClackData( String userName, String message, String key, int type ){
+        super(userName, type);
+        this.message = encrypt(message, key);
+    }
+
+    /**
      * The default constructor.
      * This constructor should call another constructor.
      */
@@ -44,6 +56,8 @@ public class MessageClackData extends ClackData {
     public String getData() {
         return this.message;
     }
+
+    public String getData(String key){  return decrypt(this.message, key); }
 
     @Override
     public int hashCode() {

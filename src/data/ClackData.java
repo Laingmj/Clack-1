@@ -113,4 +113,111 @@ public abstract class ClackData {
      * @return data
      */
     public abstract String getData();
+
+    public abstract String getData(String key);
+
+    /**
+     * Encrypts a string using a key using a Vigener shift.
+     * @param input
+     * @param key
+     * @return an encrypted string
+     */
+    protected String encrypt( String input, String key ){
+
+        //convert input to char array
+        char cinput[] = input.toCharArray();
+        int ilength = cinput.length;
+        String upperKey = key.toUpperCase();
+        //make new char arrays
+        int shift[] = new int[ilength];
+        char eInput[] = new char[ilength];
+
+        //ints for for loop
+        int i,j;
+
+        //Building trueKey from inputted key
+        for(i = 0,j = 0; i < ilength; i++, j++)
+        {
+            if(j == key.length())
+            {
+                j = 0;
+            }
+            shift[i] = upperKey.charAt(j)-'A';
+        }
+
+        //encryption
+        for(i = 0; i < ilength; ++i) {
+            if(cinput[i]>='A'&&cinput[i]<='Z'){
+                eInput[i]=(char)(cinput[i] + shift[i]);
+                if(eInput[i]>'Z'){
+                    eInput[i]-=26;
+                }
+            }else if(cinput[i]>='a'&&cinput[i]<='z') {
+                eInput[i] = (char) (cinput[i] + shift[i]);
+                if (eInput[i] > 'z') {
+                    eInput[i] -= 26;
+                }
+            }else{
+                eInput[i]= cinput[i];
+            }
+        }
+
+        //restringify
+        String finput = new String(eInput);
+
+        return finput;
+    }
+
+    /**
+     * Takes a encrypted string and decrypts it.
+     * @param input
+     * @param key
+     * @return a decrypted string
+     */
+    protected String decrypt( String input, String key ){
+
+        //convert to char array
+        char cinput[] =input.toCharArray();
+        int ilength = cinput.length;
+        String upperKey = key.toUpperCase();
+
+        //new char arrays
+        int shift[] = new int[ilength];
+        char dinput[] = new char[ilength];
+
+        //ints for loop
+        int i,j;
+
+        //Creates trueKey based on the inputted key.
+        for(i = 0,j = 0; i < ilength; i++, j++)
+        {
+            if(j == key.length())
+            {
+                j = 0;
+            }
+            shift[i] = upperKey.charAt(j)-'A';
+        }
+
+        //decryption
+        for(i = 0; i < ilength; ++i) {
+            if (cinput[i] >= 'A' && cinput[i] <= 'Z') {
+                dinput[i] = (char) (cinput[i] - shift[i]);
+                if (dinput[i] < 'A') {
+                    dinput[i] += 26;
+                }
+            } else if (cinput[i] >= 'a' && cinput[i] <= 'z') {
+                dinput[i] = (char) (cinput[i] - shift[i]);
+                if (dinput[i] < 'a') {
+                    dinput[i] += 26;
+                }
+            } else {
+                dinput[i] = cinput[i];
+            }
+        }
+
+        //restringify
+        String finput = new String(dinput);
+
+        return finput;
+    }
 }

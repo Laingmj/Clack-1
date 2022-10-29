@@ -1,7 +1,8 @@
 package data;
 
 import java.util.Objects;
-
+import java.io.*;
+import java.util.ArrayList;
 /**
  * The child of ClackData, whose data is the name and contents of a file.
  *
@@ -64,19 +65,70 @@ public class FileClackData extends ClackData {
     }
 
     /**
-     * Reads the file contents.
-     * Does not return anything.
-     * For now, it should have no code, just a declaration.
+     * Returns decrypted data from an encrypted file
+     * @param key
+     * @return
      */
-    public void readFileContents() {
+    public String getData(String key){ return decrypt(this.fileContents, key); }
+    /**
+     * Reads the file contents.
+     */
+    public void readFileContents() throws IOException {
+        StringBuilder sb = new StringBuilder();
+        try(FileInputStream istream = new FileInputStream(fileName)){
+
+            // reads a byte at a time, if it has reached the end of the file, it returns -1
+            while (istream.read() != -1) {
+                sb.append((char)istream.read());
+            }
+        } catch (FileNotFoundException f) {
+            System.err.println("File not found: " + fileName);
+        }
+        fileContents = sb.toString();
+    }
+
+    /**
+     * reads file contents and encrypts them.
+     * @param key
+     * @throws IOException
+     */
+    public void readFileContents(String key) throws IOException {
+        this.readFileContents();
+        fileContents = encrypt(fileContents, key);
     }
 
     /**
      * Writes the file contents.
-     * Does not return anything.
-     * For now, it should have no code, just a declaration.
      */
-    public void writeFileContents() {
+    public void writeFileContents() throws IOException {
+
+        try(FileOutputStream oStream = new FileOutputStream(fileName)) {
+            byte[] strToBytes = fileContents.getBytes();
+            oStream.write(strToBytes);
+            oStream.flush();
+        } catch (FileNotFoundException f){
+            System.err.println("File Not Found: " + fileName);
+        } catch (SecurityException s){
+            System.err.println("Security Exception trying to write to file: " + fileName);
+        }
+
+    }
+
+    /**
+     * Decrypts file contents and writes them to a file.
+     * @param key
+     * @throws IOException
+     */
+    public void writeFileContents(String key) throws IOException {
+        try (FileOutputStream oStream = new FileOutputStream(fileName)){
+            byte[] strToBytes = decrypt(fileContents, key).getBytes();
+            oStream.write(strToBytes);
+            oStream.flush();
+        } catch(FileNotFoundException f){
+            System.err.println("File Not Found: " + fileName);
+        } catch (SecurityException s){
+            System.err.println("Security Exception trying to write to file: " + fileName);
+        }
     }
 
     @Override
