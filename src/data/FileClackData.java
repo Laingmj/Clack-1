@@ -1,8 +1,8 @@
 package data;
 
-import java.util.Objects;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.Objects;
+
 /**
  * The child of ClackData, whose data is the name and contents of a file.
  *
@@ -55,80 +55,59 @@ public class FileClackData extends ClackData {
         return this.fileName;
     }
 
-    /**
-     * Returns the file contents.
-     *
-     * @return this.fileContent
-     */
+    @Override
     public String getData() {
         return this.fileContents;
     }
 
+    @Override
+    public String getData(String key) {
+        return decrypt(this.fileContents, key);
+    }
+
     /**
-     * Returns decrypted data from an encrypted file
-     * @param key
-     * @return
-     */
-    public String getData(String key){ return decrypt(this.fileContents, key); }
-    /**
-     * Reads the file contents.
+     * Does non-secure file reads. Opens the file pointed to by the this.fileName,
+     * reads the contents of the file, and closes the file.
+     * Does not return anything.
+     *
+     * @throws IOException if the file reads fail for any I/O issues other than file not found
      */
     public void readFileContents() throws IOException {
-        StringBuilder sb = new StringBuilder();
-        try(FileInputStream istream = new FileInputStream(fileName)){
-
-            // reads a byte at a time, if it has reached the end of the file, it returns -1
-            while (istream.read() != -1) {
-                sb.append((char)istream.read());
-            }
-        } catch (FileNotFoundException f) {
-            System.err.println("File not found: " + fileName);
-        }
-        fileContents = sb.toString();
+        this.fileContents = readFileContentsHelper();
     }
 
     /**
-     * reads file contents and encrypts them.
-     * @param key
-     * @throws IOException
+     * Does secure file reads. Opens the file pointed to by the this.fileName,
+     * reads the contents of the file, encrypts the contents to this.fileContents
+     * using the given key, and closes the file.
+     * Does not return anything.
+     *
+     * @param key a string used as the key to encrypt the file contents
+     * @throws IOException if the file reads fail for any I/O issues other than file not found
      */
     public void readFileContents(String key) throws IOException {
-        this.readFileContents();
-        fileContents = encrypt(fileContents, key);
+        this.fileContents = encrypt(readFileContentsHelper(), key);
     }
 
     /**
-     * Writes the file contents.
+     * Does non-secure file writes. Opens the file pointed to by the this.fileName,
+     * writes the contents of this.fileContents to the file, and closes the file.
+     * Does not return anything.
      */
-    public void writeFileContents() throws IOException {
-
-        try(FileOutputStream oStream = new FileOutputStream(fileName)) {
-            byte[] strToBytes = fileContents.getBytes();
-            oStream.write(strToBytes);
-            oStream.flush();
-        } catch (FileNotFoundException f){
-            System.err.println("File Not Found: " + fileName);
-        } catch (SecurityException s){
-            System.err.println("Security Exception trying to write to file: " + fileName);
-        }
-
+    public void writeFileContents() {
+        writeFileContentsHelper(this.fileContents);
     }
 
     /**
-     * Decrypts file contents and writes them to a file.
-     * @param key
-     * @throws IOException
+     * Does secure file writes. Opens the file pointed to by the this.fileName,
+     * decrypts the contents of this.fileContents and writes them to the file,
+     * and closes the file.
+     * Does not return anything.
+     *
+     * @param key a string used as the key to decrypt the file contents
      */
-    public void writeFileContents(String key) throws IOException {
-        try (FileOutputStream oStream = new FileOutputStream(fileName)){
-            byte[] strToBytes = decrypt(fileContents, key).getBytes();
-            oStream.write(strToBytes);
-            oStream.flush();
-        } catch(FileNotFoundException f){
-            System.err.println("File Not Found: " + fileName);
-        } catch (SecurityException s){
-            System.err.println("Security Exception trying to write to file: " + fileName);
-        }
+    public void writeFileContents(String key) {
+        writeFileContentsHelper(decrypt(this.fileContents, key));
     }
 
     @Override
@@ -171,5 +150,53 @@ public class FileClackData extends ClackData {
                 + "Date: " + this.date.toString() + "\n"
                 + "File Name: " + this.fileName + "\n"
                 + "File Contents: " + this.fileContents + "\n";
+    }
+
+    /**
+     * The helper method for both readFileContents(). Opens the file pointed to
+     * by the this.fileName, reads the contents of the file, closes the file, and
+     * returns it as a string.
+     *
+     * @return a string representing the file contents read
+     * @throws IOException if file reads fail for any reason other than file not found
+     */
+    private String readFileContentsHelper() throws IOException {
+        StringBuilder fileContentsReadBuilder = new StringBuilder();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(this.fileName));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                fileContentsReadBuilder.append(line).append("\n");
+            }
+
+            br.close();
+
+        } catch (FileNotFoundException fnfe) {
+            System.err.println("FileNotFoundException occurs when reading a file: " + fnfe.getMessage());
+        }
+
+        return fileContentsReadBuilder.toString();
+    }
+
+    /**
+     * The helper method for both writeFileContents(). Opens the file pointed to
+     * by the this.fileName, writes the given string to the file, and closes the file.
+     *
+     * @param fileContentsToWrite a string representing the file contents to write
+     */
+    private void writeFileContentsHelper(String fileContentsToWrite) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(this.fileName));
+            bw.write(fileContentsToWrite);
+            bw.close();
+
+        } catch (FileNotFoundException fnfe) {
+            System.err.println("FileNotFoundException occurs when writing to a file: " + fnfe.getMessage());
+
+        } catch (IOException ioe) {
+            System.err.println("IOException occurs when writing to a file: " + ioe.getMessage());
+        }
     }
 }

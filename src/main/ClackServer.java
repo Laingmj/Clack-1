@@ -16,11 +16,10 @@ import java.util.Objects;
  */
 public class ClackServer {
     private static final int DEFAULT_PORT = 7000;  // The default port number
-
-    private int port; // An integer representing the port number on the server connected to
-    private boolean closeConnection; // A boolean representing whether the connection is closed or not
-    private ClackData dataToReceiveFromClient; // A ClackData object representing the data received from the client
-    private ClackData dataToSendToClient; // A ClackData object representing the data sent to client
+    private int port;  // An integer representing the port number on the server connected to
+    private boolean closeConnection;  // A boolean representing whether the connection is closed or not
+    private ClackData dataToReceiveFromClient;  // A ClackData object representing the data received from the client
+    private ClackData dataToSendToClient;  // A ClackData object representing the data sent to client
 
     /**
      * The constructor that sets the port number.

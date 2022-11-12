@@ -110,114 +110,102 @@ public abstract class ClackData {
      * The abstract method to return the data contained in this class
      * (contents of instant message or contents of a file).
      *
-     * @return data
+     * @return the data contained in this class
      */
     public abstract String getData();
 
+    /**
+     * This abstract method to decrypt the data contained in this class
+     * (contents of instant message or contents of a file) using the given
+     * key and return the decrypted string.
+     *
+     * @param key a string used as the key to decrypt the data contained in this class
+     * @return the decrypted string of the data contained in this class
+     */
     public abstract String getData(String key);
 
     /**
-     * Encrypts a string using a key using a Vigener shift.
-     * @param input
-     * @param key
-     * @return an encrypted string
+     * This method takes in an input string to encrypt using a key, and outputs
+     * the encrypted string. This method implements the Vignère cipher to perform
+     * the encryption. The key is assumed to be always nonnull and nonempty.
+     *
+     * @param inputStringToEncrypt a string to encrypt
+     * @param key                  a string used as the key for encryption
+     * @return the encrypted string
      */
-    protected String encrypt( String input, String key ){
-
-        //convert input to char array
-        char cinput[] = input.toCharArray();
-        int ilength = cinput.length;
-        String upperKey = key.toUpperCase();
-        //make new char arrays
-        int shift[] = new int[ilength];
-        char eInput[] = new char[ilength];
-
-        //ints for for loop
-        int i,j;
-
-        //Building trueKey from inputted key
-        for(i = 0,j = 0; i < ilength; i++, j++)
-        {
-            if(j == key.length())
-            {
-                j = 0;
-            }
-            shift[i] = upperKey.charAt(j)-'A';
+    protected String encrypt(String inputStringToEncrypt, String key) {
+        if (inputStringToEncrypt == null) {
+            return null;
         }
 
-        //encryption
-        for(i = 0; i < ilength; ++i) {
-            if(cinput[i]>='A'&&cinput[i]<='Z'){
-                eInput[i]=(char)(cinput[i] + shift[i]);
-                if(eInput[i]>'Z'){
-                    eInput[i]-=26;
-                }
-            }else if(cinput[i]>='a'&&cinput[i]<='z') {
-                eInput[i] = (char) (cinput[i] + shift[i]);
-                if (eInput[i] > 'z') {
-                    eInput[i] -= 26;
-                }
-            }else{
-                eInput[i]= cinput[i];
+        final int keyLen = key.length();
+        int keyIndex = 0;
+        StringBuilder stringEncrypted = new StringBuilder();
+
+        for (int i = 0; i < inputStringToEncrypt.length(); i++) {
+            char inputCharToEncrypt = inputStringToEncrypt.charAt(i);
+            char inputCharEncrypted;
+
+            if (Character.isLowerCase(inputCharToEncrypt)) {
+                char keyChar = Character.toLowerCase(key.charAt(keyIndex));
+                inputCharEncrypted = (char) (((inputCharToEncrypt - 'a') + (keyChar - 'a')) % 26 + 'a');
+                keyIndex = (keyIndex + 1) % keyLen;
+
+            } else if (Character.isUpperCase(inputCharToEncrypt)) {
+                char keyChar = Character.toUpperCase(key.charAt(keyIndex));
+                inputCharEncrypted = (char) (((inputCharToEncrypt - 'A') + (keyChar - 'A')) % 26 + 'A');
+                keyIndex = (keyIndex + 1) % keyLen;
+
+            } else {
+                inputCharEncrypted = inputCharToEncrypt;
             }
+
+            stringEncrypted.append(inputCharEncrypted);
         }
 
-        //restringify
-        String finput = new String(eInput);
-
-        return finput;
+        return stringEncrypted.toString();
     }
 
     /**
-     * Takes a encrypted string and decrypts it.
-     * @param input
-     * @param key
-     * @return a decrypted string
+     * This method takes in an input string to decrypt using a key, and outputs
+     * the decrypted string. This method implements the backwards decryption of
+     * the Vignère cipher to perform the decryption. The key is assumed to be
+     * always nonnull and nonempty.
+     *
+     * @param inputStringToDecrypt a string to decrypt
+     * @param key                  a string used as the key for decryption
+     * @return the decrypted string
      */
-    protected String decrypt( String input, String key ){
-
-        //convert to char array
-        char cinput[] =input.toCharArray();
-        int ilength = cinput.length;
-        String upperKey = key.toUpperCase();
-
-        //new char arrays
-        int shift[] = new int[ilength];
-        char dinput[] = new char[ilength];
-
-        //ints for loop
-        int i,j;
-
-        //Creates trueKey based on the inputted key.
-        for(i = 0,j = 0; i < ilength; i++, j++)
-        {
-            if(j == key.length())
-            {
-                j = 0;
-            }
-            shift[i] = upperKey.charAt(j)-'A';
+    protected String decrypt(String inputStringToDecrypt, String key) {
+        if (inputStringToDecrypt == null) {
+            return null;
         }
 
-        //decryption
-        for(i = 0; i < ilength; ++i) {
-            if (cinput[i] >= 'A' && cinput[i] <= 'Z') {
-                dinput[i] = (char) (cinput[i] - shift[i]);
-                if (dinput[i] < 'A') {
-                    dinput[i] += 26;
-                }
-            } else if (cinput[i] >= 'a' && cinput[i] <= 'z') {
-                dinput[i] = (char) (cinput[i] - shift[i]);
-                if (dinput[i] < 'a') {
-                    dinput[i] += 26;
-                }
+        final int keyLen = key.length();
+        int keyIndex = 0;
+        StringBuilder stringDecrypted = new StringBuilder();
+
+        for (int i = 0; i < inputStringToDecrypt.length(); i++) {
+            char inputCharToDecrypt = inputStringToDecrypt.charAt(i);
+            char inputCharDecrypted;
+
+            if (Character.isLowerCase(inputCharToDecrypt)) {
+                char keyChar = Character.toLowerCase(key.charAt(keyIndex));
+                inputCharDecrypted = (char) ((inputCharToDecrypt - keyChar + 26) % 26 + 'a');
+                keyIndex = (keyIndex + 1) % keyLen;
+
+            } else if (Character.isUpperCase(inputCharToDecrypt)) {
+                char keyChar = Character.toUpperCase(key.charAt(keyIndex));
+                inputCharDecrypted = (char) ((inputCharToDecrypt - keyChar + 26) % 26 + 'A');
+                keyIndex = (keyIndex + 1) % keyLen;
+
             } else {
-                dinput[i] = cinput[i];
+                inputCharDecrypted = inputCharToDecrypt;
             }
+
+            stringDecrypted.append(inputCharDecrypted);
         }
 
-        //restringify
-        String finput = new String(dinput);
-
-        return finput;
+        return stringDecrypted.toString();
     }
 }
