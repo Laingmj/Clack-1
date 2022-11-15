@@ -1,8 +1,11 @@
 package main;
 
 import data.ClackData;
-
 import java.util.Objects;
+import java.io.*;
+import java.net.*;
+
+
 
 /**
  * The ClackServer class is a blueprint for a ClackServer object that contains information about the
@@ -20,6 +23,8 @@ public class ClackServer {
     private boolean closeConnection;  // A boolean representing whether the connection is closed or not
     private ClackData dataToReceiveFromClient;  // A ClackData object representing the data received from the client
     private ClackData dataToSendToClient;  // A ClackData object representing the data sent to client
+    private ObjectInputStream inFromClient; // ObjectInputStream to receive information from client
+    private ObjectOutputStream outToClient; // ObjectOutputStream to send information to client
 
     /**
      * The constructor that sets the port number.
@@ -27,11 +32,13 @@ public class ClackServer {
      *
      * @param port an int representing the port number on the server connected to
      */
-    public ClackServer(int port) {
+    public ClackServer(int port) throws IllegalArgumentException {
         this.port = port;
         this.closeConnection = false;
         this.dataToReceiveFromClient = null;
         this.dataToSendToClient = null;
+        this.inFromClient = null;
+        this.outToClient = null;
     }
 
     /**
@@ -46,25 +53,61 @@ public class ClackServer {
     /**
      * Starts the server.
      * Does not return anything.
-     * For now, it should have no code, just a declaration.
+     * Gets connections from the client and echoes client data.
      */
     public void start() {
+        try {
+            ServerSocket sskt = new ServerSocket(DEFAULT_PORT);
+            Socket clientSkt = sskt.accept();
+            this.inFromClient = new ObjectInputStream(clientSkt.getInputStream());
+            this.outToClient = new ObjectOutputStream(clientSkt.getOutputStream());
+
+            while (!this.closeConnection) {
+               receiveData();
+               this.dataToReceiveFromClient = this.dataToSendToClient;
+               sendData();
+            }
+
+            sskt.close();
+            clientSkt.close();
+            inFromClient.close();
+            outToClient.close();
+        } catch (IOException ioe) {
+            System.err.println("io exception occured");
+        }
+
     }
 
     /**
      * Receives data from client.
      * Does not return anything.
-     * For now, it should have no code, just a declaration.
      */
     public void receiveData() {
+        ClackData line;
+        while (!(this.closeConnection)) {
+            try {
+                line = (ClackData)this.inFromClient.readObject();
+                this.dataToReceiveFromClient = line;
+            } catch (IOException ioe) {
+                System.err.println("io exception occured");
+            } catch (ClassNotFoundException cnfe) {
+                System.err.println("class not found exception occured");
+            }
+        }
     }
 
     /**
      * Sends data to client.
      * Does not return anything.
-     * For now, it should have no code, just a declaration.
      */
     public void sendData() {
+        while (!(this.closeConnection)) {
+            try {
+                outToClient.writeObject(dataToSendToClient);
+            } catch (IOException ioe) {
+                System.err.println("io exception occured");
+            }
+        }
     }
 
     /**
