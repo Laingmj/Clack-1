@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * @author Michael Laing
  */
-public abstract class ClackData {
+public abstract class ClackData implements java.io.Serializable {
     /**
      * For giving a listing of all users connected to this session.
      */
