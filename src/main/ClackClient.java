@@ -5,6 +5,10 @@ import data.FileClackData;
 import data.MessageClackData;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -14,7 +18,7 @@ import java.util.Scanner;
  * whether the connection is open or not. The ClackClient object will also have two ClackData
  * objects representing data sent to the server and data received from the server.
  *
- * @author Ngaio Hawkins
+ * @author Ngaio Hawkins & Michael Laing
  */
 public class ClackClient {
     private static final int DEFAULT_PORT = 7000;  // The default port number
@@ -26,6 +30,8 @@ public class ClackClient {
     private ClackData dataToSendToServer;  // A ClackData object representing the data sent to the server
     private ClackData dataToReceiveFromServer;  // A ClackData object representing the data received from the server
     private Scanner inFromStd;  // A Scanner object representing the standard input
+    private ObjectInputStream inFromServer;
+    private ObjectOutputStream outToServer;
 
     /**
      * The constructor to set up the username, host name, and port.
@@ -53,6 +59,8 @@ public class ClackClient {
         this.closeConnection = false;
         this.dataToSendToServer = null;
         this.dataToReceiveFromServer = null;
+        this.inFromServer = null;
+        this. outToServer = null;
     }
 
     /**
@@ -97,16 +105,22 @@ public class ClackClient {
      *    (c) Prints the data using printData()
      * 3. Closes this.inFromStd.
      */
-    public void start() {
-        this.inFromStd = new Scanner(System.in);
+    public void start() throws IOException, ClassNotFoundException {
+            this.inFromStd = new Scanner(System.in);
+            Socket s = new Socket(this.getHostName(), this.getPort());
+            this.outToServer = new ObjectOutputStream(s.getOutputStream());
+            this.inFromServer = new ObjectInputStream(s.getInputStream());
 
-        while (!this.closeConnection) {
-            readClientData();
-            this.dataToReceiveFromServer = this.dataToSendToServer;  // echoing
-            printData();
-        }
+            while (!this.closeConnection) {
+                readClientData();
+                sendData();
+                receiveData();
+                printData();
+            }
 
-        this.inFromStd.close();
+            this.outToServer.close();
+            this.inFromServer.close();
+            this.inFromStd.close();
     }
 
     /**
@@ -156,7 +170,8 @@ public class ClackClient {
      * Does not return anything.
      * For now, it should have no code, just a declaration.
      */
-    public void sendData() {
+    public void sendData() throws IOException {
+        outToServer.writeObject(this.dataToSendToServer);
     }
 
     /**
@@ -164,7 +179,8 @@ public class ClackClient {
      * Does not return anything.
      * For now, it should have no code, just a declaration.
      */
-    public void receiveData() {
+    public void receiveData() throws IOException, ClassNotFoundException {
+        this.dataToReceiveFromServer = (ClackData) this.inFromServer.readObject();
     }
 
     /**
