@@ -4,9 +4,7 @@ import data.ClackData;
 import data.FileClackData;
 import data.MessageClackData;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Objects;
@@ -18,7 +16,7 @@ import java.util.Scanner;
  * whether the connection is open or not. The ClackClient object will also have two ClackData
  * objects representing data sent to the server and data received from the server.
  *
- * @author Ngaio Hawkins & Michael Laing
+ * @author Xinchao Song
  */
 public class ClackClient {
     private static final int DEFAULT_PORT = 7000;  // The default port number
@@ -30,8 +28,8 @@ public class ClackClient {
     private ClackData dataToSendToServer;  // A ClackData object representing the data sent to the server
     private ClackData dataToReceiveFromServer;  // A ClackData object representing the data received from the server
     private Scanner inFromStd;  // A Scanner object representing the standard input
-    private ObjectInputStream inFromServer;
-    private ObjectOutputStream outToServer;
+    private ObjectInputStream inFromServer;  // An ObjectInputStream to receive information from the server
+    private ObjectOutputStream outToServer;  // An ObjectOutputStream to send information to the server
 
     /**
      * The constructor to set up the username, host name, and port.
@@ -60,7 +58,7 @@ public class ClackClient {
         this.dataToSendToServer = null;
         this.dataToReceiveFromServer = null;
         this.inFromServer = null;
-        this. outToServer = null;
+        this.outToServer = null;
     }
 
     /**
@@ -97,41 +95,80 @@ public class ClackClient {
     /**
      * Starts the client's communication with the server.
      * Does not return anything.
+     * Must catch all relevant exceptions separately and
+     * print out messages to standard error for each exception.
      * Workflow:
-     * 1. Initializes this.inFromStd to be a Scanner object that can be used in readClientData()
-     * 2. While the connection is still running:
-     *    (a) Reads the client's data using readClientData()
-     *    (b) Sets this.dataToReceiveFromServer to be the same as this.dataToSendToServer
-     *    (c) Prints the data using printData()
-     * 3. Closes this.inFromStd.
+     * 1. Initializes the scanner and all I/O related resources;
+     * 2. While the connection is still open:
+     * (a) Reads the client's data using readClientData(),
+     * (b) Sends the data out to the server using sendData(),
+     * (c) Receives the data from the server using receiveData(),
+     * (d) Prints the data using printData();
+     * 3. Closes the scanner and all I/O related resources.
      */
-    public void start() throws IOException, ClassNotFoundException {
+    public void start() {
+        // See the following API docs for all exceptions caught:
+        // https://docs.oracle.com/javase/7/docs/api/java/net/Socket.html#Socket(java.lang.String,%20int)
+        // https://docs.oracle.com/javase/7/docs/api/java/io/ObjectInputStream.html#ObjectInputStream(java.io.InputStream)
+        // https://docs.oracle.com/javase/7/docs/api/java/io/ObjectOutputStream.html#ObjectOutputStream(java.io.OutputStream)
+        try {
             this.inFromStd = new Scanner(System.in);
-            Socket s = new Socket(this.getHostName(), this.getPort());
-            this.outToServer = new ObjectOutputStream(s.getOutputStream());
-            this.inFromServer = new ObjectInputStream(s.getInputStream());
+            Socket skt = new Socket(this.hostName, this.port);
 
+            // To correctly read and write from the network, the output stream
+            // has to be initialized before the input stream.
+            this.outToServer = new ObjectOutputStream(skt.getOutputStream());
+            this.inFromServer = new ObjectInputStream(skt.getInputStream());
+            ClientSideServerListener listener = new ClientSideServerListener(this);
+            Thread thread = new Thread(listener);
+            thread.start();
             while (!this.closeConnection) {
                 readClientData();
                 sendData();
-                receiveData();
-                printData();
-            }
 
-            this.outToServer.close();
+                // When DONE, no need to further receive or print the data.
+//                if (this.closeConnection) {
+//                    break;
+//                }
+
+//                receiveData();
+//                printData();
+            }
+            // make sure listener thread is finished before closing socket streams.
+            thread.join();
             this.inFromServer.close();
+            this.outToServer.close();
+            skt.close();
             this.inFromStd.close();
+
+        } catch (UnknownHostException uhe) {
+            System.err.println("UnknownHostException thrown in start(): " + uhe.getMessage());
+
+        } catch (StreamCorruptedException sce) {
+            System.err.println("StreamCorruptedException thrown in start(): " + sce.getMessage());
+
+        } catch (IOException ioe) {
+            System.err.println("IOException thrown in start(): " + ioe.getMessage());
+
+        } catch (SecurityException se) {
+            System.err.println("SecurityException thrown in start(): " + se.getMessage());
+
+        } catch (IllegalArgumentException iae) {
+            System.err.println("IllegalArgumentException thrown in start(): " + iae.getMessage());
+        } catch (InterruptedException ie){
+            System.err.println("Listening was Interrupted.");
+        }
     }
 
     /**
      * Gets an input from the user through standard input, represented by this.inFromStd,
      * and then initializes this.dataToSendToServer based on the following input:
-     * (a) DONE:              Closes the connection
+     * (a) DONE: Closes the connection,
      * (b) SENDFILE filename: Initializes this.dataToSendToServer as FileClackData
-     *                        and attempts to read the given file
-     * (c) LISTUSERS:         Does nothing for now; eventually, will return a list of users
-     * (d) Anything else:     Initializes this.dataToSendToServer as MessageClackData
-     *                        with the given input
+     * and attempts to read the given file,
+     * (c) LISTUSERS: Does nothing for now; eventually, will return a list of users,
+     * (d) Anything else: Initializes this.dataToSendToServer as MessageClackData,
+     * with the given input.
      * this.dataToSendToServer should be encrypted using the default key.
      * Does not return anything.
      */
@@ -168,19 +205,53 @@ public class ClackClient {
     /**
      * Sends data to server.
      * Does not return anything.
-     * For now, it should have no code, just a declaration.
+     * Must catch all relevant exceptions separately and
+     * print out messages to standard error for each exception.
      */
-    public void sendData() throws IOException {
-        outToServer.writeObject(this.dataToSendToServer);
+    public void sendData() {
+        // See the following API docs for all exceptions caught:
+        // https://docs.oracle.com/javase/7/docs/api/java/io/ObjectOutputStream.html#writeObject(java.lang.Object)
+        try {
+            this.outToServer.writeObject(this.dataToSendToServer);
+
+        } catch (InvalidClassException ice) {
+            System.err.println("InvalidClassException thrown in sendData(): " + ice.getMessage());
+
+        } catch (NotSerializableException nse) {
+            System.err.println("NotSerializableException thrown in sendData(): " + nse.getMessage());
+
+        } catch (IOException ioe) {
+            System.err.println("IOException thrown in sendData(): " + ioe.getMessage());
+        }
     }
 
     /**
      * Receives data from the server.
      * Does not return anything.
-     * For now, it should have no code, just a declaration.
+     * Must catch all relevant exceptions separately and
+     * print out messages to standard error for each exception.
      */
-    public void receiveData() throws IOException, ClassNotFoundException {
-        this.dataToReceiveFromServer = (ClackData) this.inFromServer.readObject();
+    public void receiveData() {
+        // See the following API docs for all exceptions caught:
+        // https://docs.oracle.com/javase/7/docs/api/java/io/ObjectInputStream.html#readObject()
+        try {
+            this.dataToReceiveFromServer = (ClackData) this.inFromServer.readObject();
+
+        } catch (ClassNotFoundException cnfe) {
+            System.err.println("ClassNotFoundException thrown in receiveData(): " + cnfe.getMessage());
+
+        } catch (InvalidClassException ice) {
+            System.err.println("InvalidClassException thrown in receiveData(): " + ice.getMessage());
+
+        } catch (StreamCorruptedException sce) {
+            System.err.println("StreamCorruptedException thrown in receiveData(): " + sce.getMessage());
+
+        } catch (OptionalDataException ode) {
+            System.err.println("OptionalDataException thrown in receiveData(): " + ode.getMessage());
+
+        } catch (IOException ioe) {
+            System.err.println("IOException thrown in receiveData(): " + ioe.getMessage());
+        }
     }
 
     /**
@@ -223,6 +294,10 @@ public class ClackClient {
      */
     public int getPort() {
         return this.port;
+    }
+
+    public boolean getCloseConnection(){
+        return this.closeConnection;
     }
 
     @Override
@@ -277,5 +352,50 @@ public class ClackClient {
                 + "Connection status: " + (this.closeConnection ? "Closed" : "Open") + "\n"
                 + "Data to send to the server: " + this.dataToSendToServer + "\n"
                 + "Data to receive from the server: " + this.dataToReceiveFromServer + "\n";
+    }
+
+    /**
+     * The main method in ClackClient that uses command line arguments to
+     * create a new ClackClient object, and starts the ClackClient object.
+     * The command line arguments are assumed to be always valid.
+     * The command line arguments are handled as follows:
+     * (a) No arguments: ClackClient()
+     * (b) A single argument:
+     * (i) [username]: ClackClient(username)
+     * (ii) [username]@[hostname]: ClackClient(username, hostname)
+     * (iii) [username]@[hostname]:[portnumber]: ClackClient(username, hostname, portnumber)
+     *
+     * @param args the parameters to set up ClackClient
+     */
+    public static void main(String[] args) {
+        ClackClient clackClient;
+
+        if (args.length == 0) {
+            clackClient = new ClackClient();
+
+        } else {
+            Scanner scanner = new Scanner(args[0]);
+            scanner.useDelimiter("[@:]");
+            String userName = scanner.next();
+
+            if (!scanner.hasNext()) {
+                clackClient = new ClackClient(userName);
+
+            } else {
+                String hostName = scanner.next();
+
+                if (!scanner.hasNext()) {
+                    clackClient = new ClackClient(userName, hostName);
+
+                } else {
+                    int port = scanner.nextInt();
+                    clackClient = new ClackClient(userName, hostName, port);
+                }
+            }
+
+            scanner.close();
+        }
+
+        clackClient.start();
     }
 }
