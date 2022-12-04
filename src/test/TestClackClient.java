@@ -2,8 +2,6 @@ package test;
 
 import main.ClackClient;
 
-import java.io.IOException;
-
 /**
  * You don't have to have a Javadoc for a test class.
  * You should test all implemented functions in the data classes,
@@ -188,14 +186,8 @@ public class TestClackClient {
         // If you want to test running start() multiple times here,
         // you may have to comment out this.inFromStd.close() in start().
         System.out.println("Command-line interaction tests:");
+        clackClient1.start();
 
-        try {
-            clackClient1.start();
-        } catch (IOException ioe) {
-            System.out.println("IOException caught.");
-        } catch (ClassNotFoundException cnf){
-            System.out.println("Class Not Found.");
-        }
         // Do not need to explicitly test readClientData() and printData()
         // since they are just the helper methods for start().
     }

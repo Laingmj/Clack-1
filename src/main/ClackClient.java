@@ -16,7 +16,7 @@ import java.util.Scanner;
  * whether the connection is open or not. The ClackClient object will also have two ClackData
  * objects representing data sent to the server and data received from the server.
  *
- * @author Xinchao Song
+ * @author Michael Laing
  */
 public class ClackClient {
     private static final int DEFAULT_PORT = 7000;  // The default port number
@@ -192,8 +192,8 @@ public class ClackClient {
             }
 
         } else if (nextToken.equals("LISTUSERS")) {
-            // Does nothing for now. Eventually, this will return a list of users.
-            // For Part 2, do not test LISTUSERS; otherwise, it may generate an error.
+            this.dataToSendToServer = new MessageClackData(this.userName, "listusers", DEFAULT_KEY,
+                    ClackData.CONSTANT_LISTUSERS);
 
         } else {
             String message = nextToken + this.inFromStd.nextLine();

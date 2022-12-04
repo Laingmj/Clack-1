@@ -1,5 +1,6 @@
 package data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -7,11 +8,11 @@ import java.util.Date;
  * server. An object of type ClackData consists of the username of the client user, the date
  * and time at which the data was sent and the data itself, which can either be a message
  * (MessageClackData) or the name and contents of a file (FileClackData). Note that ClackData
- * should not be instantiable.
+ * should not be instantiable. ClackData should implement the Serializable interface.
  *
  * @author Michael Laing
  */
-public abstract class ClackData implements java.io.Serializable {
+public abstract class ClackData implements Serializable {
     /**
      * For giving a listing of all users connected to this session.
      */

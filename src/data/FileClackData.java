@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * The child of ClackData, whose data is the name and contents of a file.
  *
- * @author Michael Laing
+ * @author xinchaosong
  */
 public class FileClackData extends ClackData {
     private String fileName;  // A string representing the name of a file

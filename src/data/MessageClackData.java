@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * The child of ClackData, whose data is a message.
  *
- * @author Michael Laing
+ * @author xinchaosong
  */
 public class MessageClackData extends ClackData {
     private String message;  // A string representing instant message
